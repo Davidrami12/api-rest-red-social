@@ -111,9 +111,47 @@ const login = (req, res) => {
     })  
 }
 
+const profile = (req, res) => {
+    // Recibir el parámetro del id del usuario por la url
+    const id = req.params.id
+
+    // Consulta para sacar los datos del usuario
+    User.findById(id)
+        .select({password: 0, role: 0}) // Estos dos campos no los quiero mostrar
+        .exec((error, userProfile) => {
+        if(error || !userProfile){
+            return res.status(404).send({
+                status: "error", 
+                message: "El usuario no existe o hay un error"
+            })
+        }
+
+        // Devolver el resultado
+        // Posteriormente devolver información de follows
+        return res.status(200).send({
+            status: "success",
+            user: userProfile
+        })
+    })
+}
+
+const list = (req, res) => {
+    // Controlar en qué página estamos
+
+    // Consulta con mongoose paginate
+
+    // Devolver el resultado
+    return res.status(200).send({
+        status: "success",
+        message: "rurta"
+    })
+}
+
 // Exportar acciones
 module.exports = {
     pruebaUser,
     register,
-    login
+    login,
+    profile,
+    list
 }
