@@ -2,6 +2,7 @@
 const bcrypt = require("bcrypt")
 const mongoosePagination = require("mongoose-pagination")
 const fs = require("fs")
+const path = require("path")
 
 // Importar modelos
 const User = require("../models/user")
@@ -210,7 +211,7 @@ const update = (req, res) => {
 
         // Buscar y actualizar
         try {
-            let userUpdated = User.findByIdAndUpdate(userIdentity.id, userToUpdate, {new: true})
+            let userUpdated = User.findByIdAndUpdate({_id: userIdentity.id}, userToUpdate, {new: true})
 
             if(!userUpdated){
                 return res.status(400).json({status: "error", message: "Error al actualizar usuario"})
@@ -264,7 +265,7 @@ const upload = (req, res) => {
     }
 
     // Si es correcto, guardar imagen en la bbdd
-    User.findOneAndUpdate(req.user.id, {image: req.file.filename}, {new: true}, (error, userUpdated) => {
+    User.findOneAndUpdate({_id: req.user.id}, {image: req.file.filename}, {new: true}, (error, userUpdated) => {
         
         if(error || !userUpdated){
             return res.status(500).json({
@@ -279,12 +280,28 @@ const upload = (req, res) => {
             file: req.file,
         })
     })
+}
 
+const avatar = (req, res) => {
 
+    // Sacar el parámetro de la url
+    const file = req.params.file
 
-
-
+    // Montar el path real de la imagen
+    const filePath = "./uploads/avatars/"+file
     
+    // Comprobar que existe
+    fs.stat(filePath, (error, exists) => {
+        if(!exists){
+            return res.status(404).send({
+                status: "error",
+                message: "No existe la imagen"
+            })
+        }
+
+        // Devolver un file    
+        return res.sendFile(path.resolve(filePath))
+    })
 }
 
 // Exportar acciones
@@ -295,5 +312,6 @@ module.exports = {
     profile,
     list,
     update,
-    upload
+    upload,
+    avatar
 }
